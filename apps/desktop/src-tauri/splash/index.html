@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minoverse — Starting…</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1f2e;
+      --border: #2a3042;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --accent: #6366f1;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      background: linear-gradient(135deg, #6366f1, #a78bfa, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .config-row {
+      display: flex;
+      gap: 1rem;
+      width: 680px;
+    }
+    .config-row .card { flex: 1; min-width: 0; }
+
+    .card.status-card { width: 680px; }
+
+    .card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .service-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .service-name { color: var(--text); }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge.waiting  { background: #1e2d3d; color: var(--muted); }
+    .badge.up       { background: #14532d; color: var(--green); }
+    .badge.starting { background: #422006; color: var(--yellow); }
+    .badge.error    { background: #450a0a; color: var(--red); }
+
+    .spinner {
+      width: 24px; height: 24px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .log-line {
+      font-size: 0.72rem;
+      font-family: "SF Mono", "Fira Code", monospace;
+      color: var(--muted);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.7rem;
+      min-height: 1.8em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .elapsed {
+      font-size: 0.75rem;
+      color: var(--border);
+      text-align: center;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--text); }
+    .btn.primary { border-color: var(--accent); color: var(--accent); }
+    .btn.primary:hover { background: #1e2040; }
+    .btn.go {
+      border-color: var(--green); color: var(--green);
+      font-weight: 600; font-size: 0.9rem;
+      padding: 0.6rem 1.8rem;
+    }
+    .btn.go:hover { background: rgba(34,197,94,0.1); }
+
+    .provider-option {
+      flex: 1;
+      min-width: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.7rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .provider-option:hover { border-color: var(--accent); }
+    .provider-option.selected { border-color: var(--accent); background: rgba(99,102,241,0.1); }
+    .provider-icon { font-size: 1.5rem; }
+    .provider-label { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .provider-desc { font-size: 0.65rem; color: var(--muted); }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      cursor: pointer;
+    }
+    .toggle-label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .toggle-hint {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+    .toggle-row input { display: none; }
+    .toggle-switch {
+      width: 36px; height: 20px;
+      background: var(--border);
+      border-radius: 10px;
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-row input:checked + .toggle-switch { background: var(--accent); }
+    .toggle-row input:checked + .toggle-switch::after {
+      transform: translateX(16px);
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div>
+    <div class="logo">minoverse</div>
+    <div class="tagline" style="text-align:center;margin-top:0.4rem">AI-native Knowledge OS</div>
+  </div>
+
+  <!-- Configuration row: AI Provider + Optional Services side by side -->
+  <div class="config-row">
+    <div class="card" id="provider-card">
+      <div class="card-title">AI Provider</div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        <label class="provider-option selected" data-provider="ollama">
+          <input type="radio" name="provider" value="ollama" checked hidden>
+          <span class="provider-icon">🦙</span>
+          <span class="provider-label">Ollama</span>
+          <span class="provider-desc">Local (free)</span>
+        </label>
+        <label class="provider-option" data-provider="lmstudio">
+          <input type="radio" name="provider" value="lmstudio" hidden>
+          <span class="provider-icon">🧪</span>
+          <span class="provider-label">LM Studio</span>
+          <span class="provider-desc">Local (free)</span>
+        </label>
+        <label class="provider-option" data-provider="gemini">
+          <input type="radio" name="provider" value="gemini" hidden>
+          <span class="provider-icon">✨</span>
+          <span class="provider-label">Gemini</span>
+          <span class="provider-desc">Cloud API</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card" id="services-card">
+      <div class="card-title">Optional Services</div>
+      <label class="toggle-row">
+        <span class="toggle-label">🔄 Enrichment Worker<span class="toggle-hint">Background AI processing</span></span>
+        <input type="checkbox" id="toggle-worker" checked>
+        <span class="toggle-switch"></span>
+      </label>
+      <label class="toggle-row">
+        <span class="toggle-label">👁 Vault Watcher<span class="toggle-hint">Auto-index file changes</span></span>
+        <input type="checkbox" id="toggle-watcher" checked>
+        <span class="toggle-switch"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card status-card">
+    <div class="card-title">Starting services</div>
+
+    <div class="service-row">
+      <span class="service-name">🐳 Docker (postgres · redis · ollama)</span>
+      <span id="badge-docker" class="badge waiting">waiting</span>
+    </div>
+    <div class="service-row">
+      <span class="service-name">⚡ API server</span>
+      <span id="badge-api" class="badge waiting">waiting</span>
+    </div>
+    <div class="service-row">
+      <span class="service-name">🌐 Web UI</span>
+      <span id="badge-web" class="badge waiting">waiting</span>
+    </div>
+
+    <div style="display:flex;justify-content:center;margin-top:0.25rem">
+      <div class="spinner" id="spinner"></div>
+    </div>
+
+    <div class="log-line" id="log-line">Launching…</div>
+    <div class="elapsed" id="elapsed"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn" onclick="openLogs()">📂 Open logs folder</button>
+    <button class="btn primary" id="btn-retry" style="display:none" onclick="location.reload()">↩ Retry</button>
+    <button class="btn go" id="btn-go" style="display:none" onclick="launchApp()">🚀 Let's Go</button>
+  </div>
+
+  <script>
+    const invoke = window.__TAURI__?.core?.invoke ?? (() => Promise.resolve(false));
+
+    // ── Provider selector ────────────────────────────────────────────────
+    const providerOptions = document.querySelectorAll('.provider-option');
+    function updateDockerLabel() {
+      const selected = document.querySelector('.provider-option.selected')?.dataset.provider;
+      const dockerLabel = document.querySelector('#badge-docker').closest('.service-row').querySelector('.service-name');
+      if (selected === 'ollama') {
+        dockerLabel.textContent = '🐳 Docker (postgres · redis · ollama)';
+      } else {
+        dockerLabel.textContent = '🐳 Docker (postgres · redis)';
+      }
+    }
+    providerOptions.forEach(opt => {
+      opt.addEventListener('click', () => {
+        providerOptions.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        opt.querySelector('input').checked = true;
+        const provider = opt.dataset.provider;
+        invoke('set_ai_provider', { provider }).catch(() => {});
+        updateDockerLabel();
+      });
+    });
+
+    // Load saved provider on startup
+    invoke('get_ai_provider').then(saved => {
+      if (saved) {
+        providerOptions.forEach(o => {
+          const match = o.dataset.provider === saved;
+          o.classList.toggle('selected', match);
+          o.querySelector('input').checked = match;
+        });
+        updateDockerLabel();
+      }
+    }).catch(() => {});
+
+    // ── Service toggles ──────────────────────────────────────────────────
+    const toggleWorker = document.getElementById('toggle-worker');
+    const toggleWatcher = document.getElementById('toggle-watcher');
+
+    invoke('get_service_toggles').then(t => {
+      if (t) {
+        toggleWorker.checked = t.worker !== false;
+        toggleWatcher.checked = t.watcher !== false;
+      }
+    }).catch(() => {});
+
+    function saveToggles() {
+      invoke('set_service_toggles', {
+        worker: toggleWorker.checked,
+        watcher: toggleWatcher.checked,
+      }).catch(() => {});
+    }
+    toggleWorker.addEventListener('change', saveToggles);
+    toggleWatcher.addEventListener('change', saveToggles);
+
+    // ── Service polling ──────────────────────────────────────────────────
+    const start = Date.now();
+    let apiUp = false, webUp = false, navigated = false;
+    const TIMEOUT_MS = 5 * 60 * 1000;
+
+    function setBadge(id, state, label) {
+      const el = document.getElementById(id);
+      el.className = 'badge ' + state;
+      el.textContent = label;
+    }
+
+    function setLog(msg) {
+      document.getElementById('log-line').textContent =
+        msg.replace(/^[✅🔷⚠️❌🔵]\s*/, '').trim() || msg;
+    }
+
+    function updateElapsed() {
+      const s = Math.floor((Date.now() - start) / 1000);
+      document.getElementById('elapsed').textContent = s < 2 ? '' : `${s}s elapsed`;
+    }
+
+    function openLogs() {
+      invoke('open_logs_dir').catch(() => {});
+    }
+
+    async function poll() {
+      if (navigated) return;
+      updateElapsed();
+
+      if (Date.now() - start > TIMEOUT_MS) {
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('log-line').textContent =
+          'Startup timed out — check ~/.minoverse/startup.log';
+        document.getElementById('log-line').style.color = 'var(--red)';
+        if (!apiUp) { setBadge('badge-docker','error','error'); setBadge('badge-api','error','error'); }
+        if (!webUp)  setBadge('badge-web','error','error');
+        document.getElementById('btn-retry').style.display = '';
+        return;
+      }
+
+      try { const line = await invoke('get_startup_log'); if (line) setLog(line); } catch {}
+
+      if (!apiUp) {
+        try { apiUp = await invoke('check_api_health'); } catch {}
+        if (!apiUp) {
+          try {
+            apiUp = (await fetch('http://localhost:8000/health',
+              { signal: AbortSignal.timeout(400) })).ok;
+          } catch {}
+        }
+      }
+      if (!webUp) {
+        try { webUp = await invoke('check_web_health'); } catch {}
+      }
+
+      setBadge('badge-docker', apiUp ? 'up' : 'starting', apiUp ? 'up' : 'starting…');
+      setBadge('badge-api',    apiUp ? 'up' : 'starting', apiUp ? 'up' : 'starting…');
+      setBadge('badge-web',    webUp ? 'up' : 'starting', webUp ? 'up' : 'starting…');
+
+      if (apiUp && webUp && !navigated) {
+        navigated = true;
+        ['badge-docker','badge-api','badge-web'].forEach(id => setBadge(id,'up','up'));
+        document.getElementById('spinner').style.display = 'none';
+        setLog('✅ All systems ready');
+        document.getElementById('btn-go').style.display = '';
+        return;
+      }
+
+      setTimeout(poll, 2000);
+    }
+
+    async function launchApp() {
+      document.getElementById('btn-go').disabled = true;
+      document.getElementById('btn-go').textContent = 'Launching…';
+      try { await invoke('navigate_to_app'); }
+      catch { window.location.href = 'http://localhost:3000'; }
+    }
+
+    poll();
+  </script>
+</body>
+</html>

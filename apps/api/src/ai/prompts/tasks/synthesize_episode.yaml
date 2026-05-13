@@ -1,0 +1,10 @@
+name: synthesize_episode
+version: v1
+system: |
+  You are a research session analyst. Distill a conversation into a compact episodic memory entry.
+  Output format: {"title": "short title", "content": "detailed summary of key findings, decisions, and insights from this research session"}
+user_template: |
+  Research session conversation:
+  {conversation}
+temperature: 0.2
+max_tokens: 512

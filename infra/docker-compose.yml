@@ -1,0 +1,144 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: minoverse_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-minoverse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-minoverse}
+      POSTGRES_DB: ${POSTGRES_DB:-minoverse}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-minoverse}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: minoverse_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2-alpine
+    container_name: minoverse_nats
+    ports:
+      - "4222:4222"   # client connections
+      - "8222:8222"   # HTTP monitoring
+    command: ["--jetstream", "--http_port", "8222", "--store_dir", "/data"]
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8222/healthz | grep -q ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: minoverse_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # GPU support: uncomment if NVIDIA GPU available
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/api/Dockerfile
+    container_name: minoverse_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-minoverse}:${POSTGRES_PASSWORD:-minoverse}@postgres:5432/${POSTGRES_DB:-minoverse}
+      - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DEBUG=${DEBUG:-false}
+      - GEMINI_API_KEYS=${GEMINI_API_KEYS:-}
+      - SCRAPING_SERVICE_URL=http://scraping:8001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../vault:/app/vault:ro
+
+  worker:
+    build:
+      context: ../apps/api
+      dockerfile: ../../infra/api/Dockerfile
+    container_name: minoverse_worker
+    command: ["python", "-m", "dramatiq", "src.workers"]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-minoverse}:${POSTGRES_PASSWORD:-minoverse}@postgres:5432/${POSTGRES_DB:-minoverse}
+      - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../vault:/app/vault:ro
+
+  scraping:
+    build:
+      context: ../services/scraping
+      dockerfile: ../../infra/scraping/Dockerfile
+    container_name: minoverse_scraping
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - NATS_URL=nats://nats:4222
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8001/health | grep -q ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  telegram:
+    build:
+      context: ../apps/telegram
+      dockerfile: ../../infra/telegram/Dockerfile
+    container_name: minoverse_telegram
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ALLOWED_USERS=${TELEGRAM_ALLOWED_USERS:-}
+      - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL:-}
+      - MINOVERSE_API_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+    profiles:
+      - telegram  # opt-in: docker compose --profile telegram up
+
+volumes:
+  postgres_data:
+  redis_data:
+  nats_data:
+  ollama_data:

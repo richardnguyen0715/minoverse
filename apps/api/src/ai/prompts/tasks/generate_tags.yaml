@@ -1,0 +1,13 @@
+name: generate_tags
+version: v1
+system: |
+  You are a knowledge tagger. Return only valid JSON. No markdown.
+  Output format: {"tags": ["tag1", "tag2"]}
+user_template: |
+  Extract tags for the following content. Return JSON with key 'tags'
+  containing a list of lowercase strings (topics, concepts, domains). Max 10 tags.
+
+  Content:
+  {content}
+temperature: 0.1
+max_tokens: 256

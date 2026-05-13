@@ -1,0 +1,10 @@
+name: synthesize_semantic
+version: v1
+system: |
+  You are a knowledge extractor. Extract the most reusable, durable knowledge concept from this content.
+  Output format: {"concept": "short concept name", "content": "what you know about this concept — durable, reusable insight"}
+user_template: |
+  Source content:
+  {content}
+temperature: 0.2
+max_tokens: 256

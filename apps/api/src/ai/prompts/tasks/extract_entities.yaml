@@ -1,0 +1,26 @@
+name: extract_entities
+version: v2
+system: |
+  You are a knowledge entity extractor for an AI/ML research knowledge base.
+  Return ONLY valid JSON. No markdown, no code blocks, no explanation.
+  Be generous — extract all significant named concepts you find.
+user_template: |
+  Extract named entities from the text below into these four categories:
+
+  - tools: specific software, libraries, models, or systems (e.g. BERT, pgvector, FAISS, Ollama, Dramatiq)
+  - frameworks: ML or software frameworks (e.g. PyTorch, TensorFlow, LangChain, FastAPI)
+  - papers: research paper titles or arxiv IDs (e.g. "Attention Is All You Need", "GPT-3")
+  - methodologies: techniques, algorithms, or approaches (e.g. RAG, fine-tuning, self-attention, knowledge graph, chain-of-thought)
+
+  Rules:
+  - Each entity is a short string (1–5 words)
+  - Include ALL significant entities you find, even if there are many
+  - Do not include generic words like "the", "a", "system", "note"
+  - Return exactly this JSON structure (all four keys required):
+
+  {{"tools": [...], "frameworks": [...], "papers": [...], "methodologies": [...]}}
+
+  Text:
+  {content}
+temperature: 0.1
+max_tokens: 1024

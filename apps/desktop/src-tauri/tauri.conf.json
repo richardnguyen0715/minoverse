@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "identifier": "com.minoverse.desktop",
+  "productName": "Minoverse",
+  "version": "0.1.0",
+  "build": {
+    "beforeDevCommand": "python3 -m http.server 1421 --directory src-tauri/splash",
+    "devUrl": "http://localhost:1421",
+    "beforeBuildCommand": "",
+    "frontendDist": "./splash"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Minoverse — Starting…",
+        "width": 1280,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.icns"
+    ]
+  }
+}

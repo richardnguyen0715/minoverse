@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "@minoverse/autoingest",
+  "version": "0.1.0",
+  "description": "Minoverse AutoIngest — Personal Autonomous Research & Knowledge CLI",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "bin": {
+    "autoingest": "./bin/autoingest"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun run scripts/build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test --timeout 30000",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.37.0",
+    "@types/yargs": "^17.0.33",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "eventsource-parser": "^3.0.0",
+    "ink": "^5.0.1",
+    "ink-text-input": "^6.0.0",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.76.3",
+    "ora": "^8.0.1",
+    "react": "^18.3.1",
+    "table": "^6.8.2",
+    "uuid": "^11.0.3",
+    "yaml": "^2.6.0",
+    "yargs": "^17.7.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/react": "^18.3.18",
+    "@types/uuid": "^10.0.0",
+    "bun-types": "latest"
+  }
+}

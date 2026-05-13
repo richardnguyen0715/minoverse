@@ -1,0 +1,1 @@
+"""Minoverse Telegram Bot."""

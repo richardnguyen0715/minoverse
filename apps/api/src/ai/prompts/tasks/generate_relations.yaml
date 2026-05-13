@@ -1,0 +1,19 @@
+name: generate_relations
+version: v1
+system: |
+  You are a knowledge graph assistant. Respond only with valid JSON array. No explanation, no markdown.
+  Valid relation types: related_to, inspired_by, references, extends
+user_template: |
+  Given these named entities from a knowledge resource, identify semantic relations between them.
+
+  Entities:
+  {entity_list}
+
+  Return a JSON array of objects with exactly these keys:
+    "source": entity name (string)
+    "relation_type": one of related_to | inspired_by | references | extends
+    "target": entity name (string)
+
+  Return [] if no clear relations exist.
+temperature: 0.2
+max_tokens: 512

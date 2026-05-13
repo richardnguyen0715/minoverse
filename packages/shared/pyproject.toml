@@ -1,0 +1,14 @@
+[project]
+name = "minoverse-shared"
+version = "0.1.0"
+description = "Shared primitives, schemas, and event bus for minoverse"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0",
+    "redis>=5.0",
+    "structlog>=24.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

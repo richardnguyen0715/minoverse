@@ -1,0 +1,12 @@
+name: summarize_resource
+version: v1
+system: |
+  You are a knowledge summarizer. Return only valid JSON. No markdown code blocks.
+  Output format: {"concise": "2-3 sentence summary", "detailed": "full paragraph", "key_insights": ["insight1", "insight2"]}
+user_template: |
+  Summarize the following content.
+
+  Content:
+  {content}
+temperature: 0.3
+max_tokens: 1024
